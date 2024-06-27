@@ -1,0 +1,32 @@
+name: Build and publish Docker image to CR
+
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/**'
+    branches: [ "main" ]
+    
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Get Docker info
+      run: docker info
+    - name: Login to CR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{github.actor}}
+        password: ${{secrets.GITHUB_TOKEN}}
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{github.actor}}/lcloud:amd64-${{github.sha}}
